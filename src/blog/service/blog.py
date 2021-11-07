@@ -1,6 +1,5 @@
 import datetime
 from typing import List
-from sqlalchemy.orm.session import Session
 from blog.database.model import BlogAuthor, BlogPost
 from blog.database import Database
 
@@ -15,14 +14,11 @@ class BlogService:
                 email=email, name=name, last_name=last_name, first_name=first_name
             )
             s.add(new_author)
-            s.commit()
-            return new_author.id
+        return new_author
 
-    def get_user_by_email(self, email: str) -> BlogAuthor:
+    def get_author_by_email(self, email: str) -> BlogAuthor:
         with self.db.session_scope() as s:
-            author = s.query(BlogAuthor).filter(BlogAuthor.email == email).one()
-            s.expunge_all()
-            return author
+            return s.query(BlogAuthor).filter(BlogAuthor.email == email).one_or_none()
 
     def add_post(self, title: str, article: str, author: BlogAuthor) -> BlogPost:
         with self.db.session_scope() as s:
@@ -31,9 +27,8 @@ class BlogService:
                 title=title, article=article, date_published=now, views=0, author=author
             )
             s.add(new_post)
-            s.flush()
-            s.expunge(new_post)
             return new_post
 
     def get_posts_by_user(self, author: BlogAuthor) -> List[BlogPost]:
-        pass
+        with self.db.session_scope() as s:
+            return s.query(BlogPost).filter(BlogPost.author == author).all()

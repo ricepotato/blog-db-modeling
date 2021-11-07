@@ -36,7 +36,7 @@ class Database(object):
             SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
         )
         self.Session = sessionmaker(
-            autocommit=False, autoflush=False, bind=self.engine, expire_on_commit=True
+            autocommit=False, autoflush=False, bind=self.engine, expire_on_commit=False
         )
 
     @contextmanager
@@ -45,7 +45,7 @@ class Database(object):
         session = self.Session()
         try:
             yield session
-            # session.commit()
+            session.commit()
         except SQLAlchemyError as e:
             log.error("Database Error. %s", e)
             session.rollback()

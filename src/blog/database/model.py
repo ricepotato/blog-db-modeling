@@ -14,7 +14,7 @@ class BlogAuthor(Base):
     first_name = Column(String(45))
     last_name = Column(String(45))
 
-    posts = relationship("BlogPost", backref="author")
+    posts = relationship("BlogPost")
 
 
 class BlogPost(Base):
@@ -26,4 +26,4 @@ class BlogPost(Base):
     views = Column(Integer)
     author_id = Column(Integer, ForeignKey("blog_author.id"))
 
-    # author = relationship("BlogAuthor", back_populates="posts")
+    author = relationship("BlogAuthor")

@@ -1,6 +1,5 @@
 import unittest
 from blog.service.blog import BlogService
-from blog.database.model import Base
 from blog.database import Database
 
 
@@ -11,21 +10,18 @@ class BlotServiceTestCase(unittest.TestCase):
     def setUp(self):
         Database().drop_all()
         Database().create_all()
-        # Base.metadata.drop_all(bind=engine)
-        # Base.metadata.create_all(bind=engine)
         self.blog_svc = BlogService()
 
     def test_blog_Svc(self):
         email = "sukjun40@naver.com"
-        id = self.blog_svc.add_user(email, "sukjun")
-        assert id
-        # user = self.blog_svc.get_user_by_email(email)
-        # assert user.name == "sukjun"
-        # post = self.blog_svc.add_post("some title", "some article", user)
-        # assert post.author_id
-        # assert post.author
-        # post = self.blog_svc.add_post("some title 2", "some article 2", user)
-        # assert post.author_id
-        # assert post.author
+        author = self.blog_svc.add_user(email, "sukjun")
+        assert author.id
+        author = self.blog_svc.get_author_by_email(email)
+        assert author.name == "sukjun"
+        new_post = self.blog_svc.add_post("some title", "some article", author)
+        assert new_post.author_id == author.id
+        new_post = self.blog_svc.add_post("some title 2", "some article 2", author)
+        assert new_post.author_id == author.id
 
-        # posts = self.blog_svc.get_posts_by_user(user)
+        posts = self.blog_svc.get_posts_by_user(author)
+        assert posts
