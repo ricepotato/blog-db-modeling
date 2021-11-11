@@ -25,3 +25,8 @@ class BlotServiceTestCase(unittest.TestCase):
 
         posts = self.blog_svc.get_posts_by_user(author)
         assert posts
+
+        author.last_name = "sukjun"
+        author.first_name = "sagong"
+        author = self.blog_svc.mod_user(author)
+        assert author.last_name == "sukjun"

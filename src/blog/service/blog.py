@@ -16,6 +16,11 @@ class BlogService:
             s.add(new_author)
         return new_author
 
+    def mod_user(self, author: BlogAuthor) -> bool:
+        with self.db.session_scope() as s:
+            s.add(author)
+        return author
+
     def get_author_by_email(self, email: str) -> BlogAuthor:
         with self.db.session_scope() as s:
             return s.query(BlogAuthor).filter(BlogAuthor.email == email).one_or_none()
