@@ -33,7 +33,9 @@ class Database(object):
     def __init__(self):
 
         self.engine = create_engine(
-            SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+            SQLALCHEMY_DATABASE_URL,
+            connect_args={"check_same_thread": False},
+            echo=True,
         )
         self.Session = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine, expire_on_commit=False
