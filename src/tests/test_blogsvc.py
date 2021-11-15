@@ -24,9 +24,16 @@ class BlotServiceTestCase(unittest.TestCase):
 
         author = self.blog_svc.get_user_by_email(email)
         assert author.name == "sukjun"
-        new_post = self.blog_svc.add_post("some title", "some article", author)
+        new_post = self.blog_svc.add_post(
+            "some title", "some article", author, tags=["java_tag", "python_tag"]
+        )
         assert new_post.author_id == author.id
-        new_post = self.blog_svc.add_post("some title 2", "some article 2", author)
+        new_post = self.blog_svc.add_post(
+            "some title 2",
+            "some article 2",
+            author,
+            tags=["python_tag", "javascript_tag"],
+        )
         assert new_post.author_id == author.id
 
         posts = self.blog_svc.get_posts_by_user(author)

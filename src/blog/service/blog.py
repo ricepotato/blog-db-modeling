@@ -2,7 +2,7 @@ import datetime
 from typing import List
 
 from sqlalchemy.orm import lazyload, joinedload
-from blog.database.model import BlogAuthor, BlogCategory, BlogPost
+from blog.database.model import BlogAuthor, BlogCategory, BlogPost, BlogTag
 from blog.database import Database
 
 
@@ -27,14 +27,28 @@ class BlogService:
         with self.db.session_scope() as s:
             return s.query(BlogAuthor).filter(BlogAuthor.email == email).one_or_none()
 
-    def add_post(self, title: str, article: str, author: BlogAuthor) -> BlogPost:
+    def add_post(
+        self,
+        title: str,
+        article: str,
+        author: BlogAuthor,
+        category: BlogCategory = None,
+        tags: List[str] = None,
+    ) -> BlogPost:
         with self.db.session_scope() as s:
-            now = datetime.datetime.utcnow()
-            new_post = BlogPost(
-                title=title, article=article, date_published=now, author=author
-            )
+            new_post = BlogPost(title=title, article=article, author=author)
+
+            if category is not None:
+                new_post.category = category
+
+            if tags is not None:
+                for tag_name in tags:
+                    blog_tag = s.query(BlogTag).filter(
+                        BlogTag.name == tag_name
+                    ).first() or BlogTag(name=tag_name)
+                    new_post.tags.append(blog_tag)
             s.add(new_post)
-            return new_post
+        return new_post
 
     def mod_post(self, post: BlogPost) -> bool:
         with self.db.session_scope() as s:
@@ -70,3 +84,7 @@ class BlogService:
         with self.db.session_scope() as s:
             category = s.query(BlogCategory).filter(BlogCategory.name == name).one()
             return category.posts
+
+    def get_tags(self) -> List[BlogTag]:
+        with self.db.session_scope() as s:
+            return s.query(BlogTag).all()

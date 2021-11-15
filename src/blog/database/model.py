@@ -40,18 +40,34 @@ class BlogCategory(Base, TimeStampedMixin):
     posts = relationship("BlogPost")
 
 
+blog_post_tag = Table(
+    "blog_post_tag",
+    Base.metadata,
+    Column("tag_id", Integer, ForeignKey("blog_post.id"), primary_key=True),
+    Column("post_id", Integer, ForeignKey("blog_tag.id"), primary_key=True),
+)
+
+
+class BlogTag(Base):
+    __tablename__ = "blog_tag"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(20), index=True, unique=True)
+
+
 class BlogPost(Base, TimeStampedMixin):
     __tablename__ = "blog_post"
     id = Column(Integer, primary_key=True)
     title = Column(String(144))
     article = Column(String)
-    date_published = Column(DateTime)
+    date_published = Column(DateTime, default=datetime.datetime.utcnow)
     views = Column(Integer, default=0)
     author_id = Column(Integer, ForeignKey("blog_author.id"))
     category_id = Column(Integer, ForeignKey("blog_category.id"), nullable=True)
 
     author: BlogAuthor = relationship("BlogAuthor")
     category: BlogCategory = relationship("BlogCategory")
+    tags = relationship("BlogTag", secondary=blog_post_tag)
 
 
 class Comment(Base, TimeStampedMixin):
@@ -64,10 +80,3 @@ class Comment(Base, TimeStampedMixin):
 
     author: BlogAuthor = relationship("BlogAuthor")
     post: BlogPost = relationship("BlogPost")
-
-
-class BlogTag(Base, TimeStampedMixin):
-    __tablename__ = "blog_tag"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(20), index=True)
