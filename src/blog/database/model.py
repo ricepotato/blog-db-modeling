@@ -29,15 +29,15 @@ class BlogAuthor(Base, TimeStampedMixin):
     first_name = Column(String(45))
     last_name = Column(String(45))
 
-    posts = relationship("BlogPost")
+    posts = relationship("BlogPost", lazy="dynamic")
 
 
 class BlogCategory(Base, TimeStampedMixin):
     __tablename__ = "blog_category"
     id = Column(Integer, primary_key=True)
-    name = Column(String(20), index=True)
+    name = Column(String(20), unique=True)
 
-    posts = relationship("BlogPost")
+    posts = relationship("BlogPost")  # too many..
 
 
 blog_post_tag = Table(
@@ -79,4 +79,4 @@ class Comment(Base, TimeStampedMixin):
     post_id = Column(Integer, ForeignKey("blog_post.id"))
 
     author: BlogAuthor = relationship("BlogAuthor")
-    post: BlogPost = relationship("BlogPost")
+    # post: BlogPost = relationship("BlogPost")

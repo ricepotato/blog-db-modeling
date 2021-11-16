@@ -14,37 +14,83 @@ class BlotServiceTestCase(unittest.TestCase):
 
     def test_blog_Svc(self):
         email = "sukjun40@naver.com"
-        author = self.blog_svc.add_user(email, "sukjun")
-        assert author.id
+        id = self.blog_svc.add_author(email, "ricepotato")
+        assert id != 0
 
-        author.last_name = "sukjun"
-        author.first_name = "sagong"
-        author = self.blog_svc.mod_user(author)
-        assert author.last_name == "sukjun"
-
-        author = self.blog_svc.get_user_by_email(email)
-        assert author.name == "sukjun"
-        new_post = self.blog_svc.add_post(
-            "some title", "some article", author, tags=["java_tag", "python_tag"]
+        res = self.blog_svc.mod_author_partial(
+            id, last_name="sagong", first_name="sukjun"
         )
-        assert new_post.author_id == author.id
-        new_post = self.blog_svc.add_post(
-            "some title 2",
-            "some article 2",
+        assert res
+
+        author = self.blog_svc.get_author_by_id(id)
+        assert author.last_name == "sagong"
+        assert author.first_name == "sukjun"
+
+        # 오타가 발생할 수 있음
+        res = self.blog_svc.mod_author_partial(
+            id, list_name="sagong", first_name="sukjun"
+        )
+        assert res
+
+        author.first_name = "hello"
+        author.last_name = "world"
+
+        res = self.blog_svc.mod_author(author)
+        assert res
+        updated_author = self.blog_svc.get_author_by_id(author.id)
+        updated_author.first_name = "hello"
+        updated_author.last_name = "world"
+
+        id = self.blog_svc.add_category("javascript")
+        assert id != 0
+        id = self.blog_svc.add_category("python")
+        assert id != 0
+
+        author = self.blog_svc.get_author_by_email(email)
+        id = self.blog_svc.add_post(
+            "this is post title", "this is post without category", author
+        )
+        assert id != 0
+
+        category = self.blog_svc.get_category_by_name("c++")
+        assert category is None
+
+        category = self.blog_svc.get_category_by_name("javascript")
+        id = self.blog_svc.add_post(
+            "this is post title",
+            "this is post with category and tags",
             author,
-            tags=["python_tag", "javascript_tag"],
+            category,
+            ["javascript", "python"],
         )
-        assert new_post.author_id == author.id
+        assert id
 
-        posts = self.blog_svc.get_posts_by_user(author)
-        assert len(posts) == 2
+        post = self.blog_svc.get_post_by_id(id)
+        assert post
+        assert post.author.name
+        assert post.category
+        assert post.tags
 
-        new_category = self.blog_svc.add_category("javascript")
-        assert new_category.id
+        id = self.blog_svc.add_author("sukjun.sagong@ahnlab.com", "sukjun.sagong")
+        assert id != 0
+        author2 = self.blog_svc.get_author_by_id(id)
 
-        new_post.category = new_category
-        assert self.blog_svc.mod_post(new_post)
+        for idx in range(40):
+            id = self.blog_svc.add_post(
+                f"this is post title {idx}",
+                "this is post without category {idx}",
+                author2,
+            )
+            assert id != 0
 
-        post = self.blog_svc.get_post_by_id(new_post.id)
-        assert post.author.name == "sukjun"
-        assert post.category.name == "javascript"
+        posts = self.blog_svc.get_posts_by_author(author2, 3, 0)
+        assert len(posts) == 3
+        assert posts[0].id == 42
+        assert posts[1].id == 41
+        assert posts[2].id == 40
+        posts = self.blog_svc.get_posts_by_author(author2, 3, 3)
+        assert len(posts) == 3
+        assert posts[0].id == 39
+        assert posts[1].id == 38
+        assert posts[2].id == 37
+
