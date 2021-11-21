@@ -37,7 +37,7 @@ class BlogCategory(Base, TimeStampedMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
 
-    posts = relationship("BlogPost")  # too many..
+    posts = relationship("BlogPost", lazy="dynamic")  # too many..
 
 
 blog_post_tag = Table(

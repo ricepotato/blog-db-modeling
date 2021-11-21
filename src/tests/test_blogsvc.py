@@ -1,5 +1,5 @@
 import unittest
-from blog.service.blog import BlogService
+from blog.service.blog import BlogService, CategoryNotExist
 from blog.database import Database
 
 
@@ -52,8 +52,8 @@ class BlotServiceTestCase(unittest.TestCase):
         )
         assert id != 0
 
-        category = self.blog_svc.get_category_by_name("c++")
-        assert category is None
+        with self.assertRaises(CategoryNotExist):
+            category = self.blog_svc.get_category_by_name("c++")
 
         category = self.blog_svc.get_category_by_name("javascript")
         id = self.blog_svc.add_post(
@@ -71,15 +71,28 @@ class BlotServiceTestCase(unittest.TestCase):
         assert post.category
         assert post.tags
 
+        new_tags = ["c++", "go", "javascript"]
+        res = self.blog_svc.mod_post_partial(post.id, new_tags=new_tags)
+        assert res
+
+        post = self.blog_svc.get_post_by_id(post.id)
+        assert post.tags
+        tag_names = [tag.name for tag in post.tags]
+        # new tags 에 전부 포함되어있는지 확인
+        for tag_name in tag_names:
+            assert tag_name in new_tags
+
         id = self.blog_svc.add_author("sukjun.sagong@ahnlab.com", "sukjun.sagong")
         assert id != 0
         author2 = self.blog_svc.get_author_by_id(id)
 
+        js_category = self.blog_svc.get_category_by_name("javascript")
         for idx in range(40):
             id = self.blog_svc.add_post(
                 f"this is post title {idx}",
                 "this is post without category {idx}",
                 author2,
+                js_category,
             )
             assert id != 0
 
@@ -94,3 +107,5 @@ class BlotServiceTestCase(unittest.TestCase):
         assert posts[1].id == 38
         assert posts[2].id == 37
 
+        posts = self.blog_svc.get_posts_by_category_name("javascript")
+        assert len(posts) == 5
