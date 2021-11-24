@@ -29,7 +29,10 @@ class BlogAuthor(Base, TimeStampedMixin):
     first_name = Column(String(45))
     last_name = Column(String(45))
 
-    posts = relationship("BlogPost", lazy="dynamic")
+    posts = relationship("BlogPost", lazy="dynamic", viewonly=True)
+
+    def __str__(self):
+        return f"[{self.id}] {self.name}, {self.email}"
 
 
 class BlogCategory(Base, TimeStampedMixin):
@@ -37,7 +40,10 @@ class BlogCategory(Base, TimeStampedMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String(20), unique=True)
 
-    posts = relationship("BlogPost", lazy="dynamic")  # too many..
+    posts = relationship("BlogPost", lazy="dynamic", viewonly=True)  # too many..
+
+    def __str__(self):
+        return f"<{self.name}>"
 
 
 blog_post_tag = Table(
@@ -54,6 +60,9 @@ class BlogTag(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(20), index=True, unique=True)
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class BlogPost(Base, TimeStampedMixin):
     __tablename__ = "blog_post"
@@ -65,9 +74,13 @@ class BlogPost(Base, TimeStampedMixin):
     author_id = Column(Integer, ForeignKey("blog_author.id"))
     category_id = Column(Integer, ForeignKey("blog_category.id"), nullable=True)
 
-    author: BlogAuthor = relationship("BlogAuthor")
-    category: BlogCategory = relationship("BlogCategory")
-    tags = relationship("BlogTag", secondary=blog_post_tag)
+    author: BlogAuthor = relationship("BlogAuthor", lazy="joined")
+    category: BlogCategory = relationship("BlogCategory", lazy="joined")
+    tags = relationship("BlogTag", secondary=blog_post_tag, lazy="joined")
+
+    def __str__(self):
+        tag_names = [f"#{tag.name}" for tag in self.tags]
+        return f"[{self.id}] 글쓴이:{self.author} | {self.title}, {self.article} | {self.category}, {tag_names}"
 
 
 class Comment(Base, TimeStampedMixin):

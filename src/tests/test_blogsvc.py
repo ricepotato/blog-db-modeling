@@ -1,5 +1,5 @@
 import unittest
-from blog.service.blog import BlogService, CategoryNotExist
+from blog.service.blog import BlogService, CategoryNotExist, AuthorNotExist
 from blog.database import Database
 
 
@@ -16,6 +16,12 @@ class BlotServiceTestCase(unittest.TestCase):
         email = "sukjun40@naver.com"
         id = self.blog_svc.add_author(email, "ricepotato")
         assert id != 0
+
+        res = self.blog_svc.get_author_by_email("1234")
+        assert res is None
+
+        with self.assertRaises(AuthorNotExist):
+            _ = self.blog_svc.get_author_by_id(0)
 
         res = self.blog_svc.mod_author_partial(
             id, last_name="sagong", first_name="sukjun"
@@ -35,11 +41,12 @@ class BlotServiceTestCase(unittest.TestCase):
         author.first_name = "hello"
         author.last_name = "world"
 
+        # author 전체 업데이트
         res = self.blog_svc.mod_author(author)
         assert res
         updated_author = self.blog_svc.get_author_by_id(author.id)
-        updated_author.first_name = "hello"
-        updated_author.last_name = "world"
+        assert updated_author.first_name == "hello"
+        assert updated_author.last_name == "world"
 
         id = self.blog_svc.add_category("javascript")
         assert id != 0
@@ -96,12 +103,12 @@ class BlotServiceTestCase(unittest.TestCase):
             )
             assert id != 0
 
-        posts = self.blog_svc.get_posts_by_author(author2, 3, 0)
+        posts = self.blog_svc.get_posts_by_author(author2, limit=3, offset=0)
         assert len(posts) == 3
         assert posts[0].id == 42
         assert posts[1].id == 41
         assert posts[2].id == 40
-        posts = self.blog_svc.get_posts_by_author(author2, 3, 3)
+        posts = self.blog_svc.get_posts_by_author(author2, limit=3, offset=3)
         assert len(posts) == 3
         assert posts[0].id == 39
         assert posts[1].id == 38
