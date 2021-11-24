@@ -1,6 +1,6 @@
 import unittest
-from blog.service.blog import BlogService, CategoryNotExist, AuthorNotExist
-from blog.database import Database
+from service.blog import BlogService, CategoryNotExist, AuthorNotExist
+from database import Database
 
 
 class BlotServiceTestCase(unittest.TestCase):
