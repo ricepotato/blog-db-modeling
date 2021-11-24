@@ -1,3 +1,4 @@
+import os
 import logging
 from typing import Generator
 from sqlalchemy import create_engine
@@ -31,15 +32,29 @@ class Database(object):
     __metaclass__ = Singleton
 
     def __init__(self):
-
+        connection_string = self._get_connection_string()
+        ECHO_SQL = bool(
+            os.environ.get("ECHO_SQL", "false").lower() in ["1", "true", "yes"]
+        )
         self.engine = create_engine(
-            SQLALCHEMY_DATABASE_URL,
-            connect_args={"check_same_thread": False},
-            echo=True,
+            connection_string, connect_args={"check_same_thread": False}, echo=ECHO_SQL,
         )
         self.Session = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine, expire_on_commit=False
         )
+
+    def _get_connection_string(self):
+        dbms = os.environ.get("DBMS", "sqlite")
+        if dbms == "sqlite":
+            return SQLALCHEMY_DATABASE_URL
+        elif dbms == "mysql":
+            db_name = os.environ.get("MYSQL_DATABASE")
+            user_name = os.environ.get("MYSQL_USERNAME")
+            password = os.environ.get("MYSQL_PASSWORD")
+            mysql_host = os.environ.get("MYSQL_HOST")
+            return f"mysql+pymysql://{user_name}:{password}@{mysql_host}/{db_name}?charset=utf8mb4"
+        else:
+            raise ValueError
 
     @contextmanager
     def session_scope(self) -> Generator[Session, None, None]:

@@ -2,8 +2,8 @@ import functools
 import sqlalchemy
 from typing import List
 from sqlalchemy.orm import joinedload
-from blog.database.model import BlogAuthor, BlogCategory, BlogPost, BlogTag
-from blog.database import Database
+from database.model import BlogAuthor, BlogCategory, BlogPost, BlogTag
+from database import Database
 
 
 class BlogServiceException(Exception):
@@ -124,7 +124,6 @@ class BlogService:
             s.add(obj)
         return True
 
-    @handle_author_not_exist
     def get_author_by_email(self, email: str) -> BlogAuthor:
         """이메일로 author 검색
 
@@ -274,6 +273,11 @@ class BlogService:
             new_category = BlogCategory(name=name)
             s.add(new_category)
         return new_category.id
+
+    @handle_category_not_exist
+    def get_category_by_id(self, id: int) -> BlogCategory:
+        with self.db.session_scope() as s:
+            return s.query(BlogCategory).filter(BlogCategory.id == id).one()
 
     @handle_category_not_exist
     def get_category_by_name(self, name: str) -> BlogCategory:
